@@ -65,10 +65,11 @@ pub enum Agent {
     Letta,
     Maki,
     Muse,
+    Codebuddy,
 }
 
 impl Agent {
-    pub const ALL: [Self; 24] = [
+    pub const ALL: [Self; 25] = [
         Self::Pi,
         Self::Claude,
         Self::Codex,
@@ -93,6 +94,7 @@ impl Agent {
         Self::Letta,
         Self::Maki,
         Self::Muse,
+        Self::Codebuddy,
     ];
 
     pub const SCREEN_MANIFEST_AGENTS: [Self; 22] = [
@@ -147,6 +149,7 @@ pub fn agent_label(agent: Agent) -> &'static str {
         Agent::Letta => "letta",
         Agent::Maki => "maki",
         Agent::Muse => "muse",
+        Agent::Codebuddy => "codebuddy",
     }
 }
 
@@ -182,6 +185,7 @@ pub fn interactive_agent_executable(agent: Agent) -> &'static str {
         Agent::Letta => "letta",
         Agent::Maki => "maki",
         Agent::Muse => "muse",
+        Agent::Codebuddy => "codebuddy",
     }
 }
 
@@ -199,6 +203,7 @@ fn lookup_agent(name: &str) -> Option<Agent> {
     let name = path_basename(name);
     match name {
         "pi" => Some(Agent::Pi),
+        "codebuddy" => Some(Agent::Codebuddy),
         "claude" | "claude-code" => Some(Agent::Claude),
         "codex" => Some(Agent::Codex),
         "gemini" => Some(Agent::Gemini),
@@ -333,6 +338,7 @@ pub(crate) fn full_lifecycle_hook_authority(source: &str, agent_label: &str) -> 
         ("herdr:pi", "pi")
             | ("herdr:omp", "omp")
             | ("herdr:mastracode", "mastracode")
+            | ("herdr:codebuddy", "codebuddy")
             | ("herdr:opencode", "opencode")
             | ("herdr:kilo", "kilo")
             | ("herdr:kimi", "kimi")
@@ -1110,6 +1116,7 @@ mod tests {
             (Agent::Letta, "letta"),
             (Agent::Maki, "maki"),
             (Agent::Muse, "muse"),
+            (Agent::Codebuddy, "codebuddy"),
         ];
         assert_eq!(expected.len(), Agent::ALL.len());
         for (agent, executable) in expected {
@@ -1126,12 +1133,14 @@ mod tests {
     }
 
     #[test]
-    fn mastracode_is_hook_authority_without_screen_manifest() {
-        assert!(full_lifecycle_hook_authority(
-            "herdr:mastracode",
-            "mastracode"
-        ));
-        assert!(!Agent::SCREEN_MANIFEST_AGENTS.contains(&Agent::Mastracode));
+    fn hook_agents_without_screen_manifests_are_hook_authority() {
+        for (source, label, agent) in [
+            ("herdr:mastracode", "mastracode", Agent::Mastracode),
+            ("herdr:codebuddy", "codebuddy", Agent::Codebuddy),
+        ] {
+            assert!(full_lifecycle_hook_authority(source, label));
+            assert!(!Agent::SCREEN_MANIFEST_AGENTS.contains(&agent));
+        }
     }
 
     #[test]
